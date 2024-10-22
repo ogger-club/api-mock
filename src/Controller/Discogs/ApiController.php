@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller\Discogs;
 
 use App\Controller\AbstractApplicationController;
+use App\Factory\Log\LoggerFactoryFactory;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use UnexpectedValueException;
@@ -15,9 +17,17 @@ use function sprintf;
 #[Route('/api/discogs')]
 final class ApiController extends AbstractApplicationController
 {
+    public function __construct(private LoggerFactoryFactory $loggerFactoryFactory)
+    {
+    }
+
     #[Route('/release/{releaseId<\d+>}', name: 'api_discogs_release', methods: ['GET'])]
     public function getRelease(int $releaseId): Response
     {
+        $logger = $this->createLogger('api_discogs_release');
+        $logger->debug(__FUNCTION__);
+        $logger->debug(sprintf('Release id: %d', $releaseId));
+
         return new Response(
             $this->createResponseData(),
             200,
@@ -26,6 +36,13 @@ final class ApiController extends AbstractApplicationController
                 'x-discogs-ratelimit' => 60,
             ],
         );
+    }
+
+    private function createLogger(string $channel): LoggerInterface
+    {
+        $loggerFactory = $this->loggerFactoryFactory->createLoggerFactory($this->createProjectPathFromParameter());
+
+        return $loggerFactory->createLogger($channel);
     }
 
     private function createResponseData(): string
