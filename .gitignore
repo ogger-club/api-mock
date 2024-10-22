@@ -12,4 +12,5 @@
 ###> custom
 # PhpStorm
 /.idea/
+composer.lock
 ###< custom
