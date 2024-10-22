@@ -29,7 +29,7 @@ final class ApiController extends AbstractApplicationController
     {
     }
 
-    #[Route('/release/{releaseId<\d+>}', name: 'api_discogs_release', methods: ['GET'])]
+    #[Route('/releases/{releaseId<\d+>}', name: 'api_discogs_release', methods: ['GET'])]
     public function getRelease(int $releaseId): Response
     {
         $logger = $this->createLogger('api_discogs_release');
