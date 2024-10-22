@@ -8,3 +8,8 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+###> custom
+# PhpStorm
+/.idea/
+###< custom
