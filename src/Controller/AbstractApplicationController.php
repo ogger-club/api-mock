@@ -19,13 +19,13 @@ abstract class AbstractApplicationController extends AbstractController
 
     protected function getClientIp(Request $request): string
     {
-        $cip = $request->getClientIp();
+        $clientIp = $request->getClientIp();
 
-        if ($cip === null) {
+        if ($clientIp === null) {
             throw new UnexpectedValueException('Error retrieving client IP.');
         }
 
-        return $cip;
+        return $clientIp;
     }
 
     protected function getStringParameter(string $name): string

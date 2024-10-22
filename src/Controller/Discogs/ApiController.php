@@ -38,27 +38,22 @@ final class ApiController extends AbstractApplicationController
     #[Route('/releases/{releaseId<\d+>}', name: 'api_discogs_release', methods: ['GET'])]
     public function getRelease(int $releaseId, Request $request): Response
     {
-        $logger = $this->createLogger('api_discogs_release');
-        $logger->debug(sprintf('%s: %d', __FUNCTION__, $releaseId));
+        $clientIp = $this->getClientIp($request);
 
-        $cip = $this->getClientIp($request);
-        $logger->debug(sprintf('ip: %s', $cip));
-
-        $limiter = $this->discogsApiLimiter->create($cip);
+        $limiter = $this->discogsApiLimiter->create($clientIp);
         $rateLimit = $limiter->consume(1);
 
         $headers = $this->createHeaders($rateLimit);
-        $logger->debug(sprintf('Response headers: %s', json_encode($headers)));
 
-        $responseStatusCode = Response::HTTP_OK;
+        $responseStatusCode = $this->getResponseStatusCode($rateLimit);
 
-        // Somehow this does not work, @todo check why.
-        //$isAccepted = $rateLimit->isAccepted();
-        $isAccepted = $rateLimit->getRemainingTokens() > 0;
-        if ($isAccepted === false) {
-            $responseStatusCode = Response::HTTP_TOO_MANY_REQUESTS;
-        }
-        $logger->debug(sprintf('Response status: %d', $responseStatusCode));
+        $this->log(
+            $clientIp,
+            $headers,
+            $releaseId,
+            $responseStatusCode,
+            $request->attributes->getString('_route'),
+        );
 
         return new Response(
             $this->createResponseData($responseStatusCode),
@@ -105,5 +100,45 @@ final class ApiController extends AbstractApplicationController
         }
 
         return $data;
+    }
+
+    private function getResponseStatusCode(RateLimit $rateLimit): int
+    {
+        $responseStatusCode = Response::HTTP_OK;
+
+        // Somehow this does not work, @todo check why.
+        //$isAccepted = $rateLimit->isAccepted();
+        $isAccepted = $rateLimit->getRemainingTokens() > 0;
+        if ($isAccepted === false) {
+            $responseStatusCode = Response::HTTP_TOO_MANY_REQUESTS;
+        }
+
+        return $responseStatusCode;
+    }
+
+    /**
+     * @param array<string,int|string> $headers
+     */
+    private function log(
+        string $clientIp,
+        array $headers,
+        int $releaseId,
+        int $responseStatusCode,
+        string $route,
+    ): bool {
+        $logger = $this->createLogger('api_discogs_release');
+
+        $logger->debug(
+            sprintf(
+                '%s %s %d %d %s',
+                $clientIp,
+                $route,
+                $releaseId,
+                $responseStatusCode,
+                json_encode($headers),
+            ),
+        );
+
+        return true;
     }
 }
