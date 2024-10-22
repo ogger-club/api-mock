@@ -25,6 +25,8 @@ use function sprintf;
 #[Route('/api/discogs')]
 final class ApiController extends AbstractApplicationController
 {
+    private const int RATE_LIMIT_TOTAL = 60;
+
     public function __construct(private LoggerFactoryFactory $loggerFactoryFactory)
     {
     }
@@ -41,7 +43,7 @@ final class ApiController extends AbstractApplicationController
             200,
             [
                 'Content-Type' => 'application/json',
-                'x-discogs-ratelimit' => 60,
+                'x-discogs-ratelimit' => self::RATE_LIMIT_TOTAL,
             ],
         );
     }
