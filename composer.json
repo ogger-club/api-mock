@@ -11,6 +11,8 @@
         "symfony/dotenv": "7.1.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.1.*",
+        "symfony/lock": "7.1.*",
+        "symfony/rate-limiter": "7.1.*",
         "symfony/runtime": "7.1.*",
         "symfony/yaml": "7.1.*",
         "webservco/log": "^0"

@@ -1,0 +1,6 @@
+framework:
+  rate_limiter:
+    discogs_api:
+      policy: 'sliding_window'
+      limit: 60
+      interval: '60 seconds'

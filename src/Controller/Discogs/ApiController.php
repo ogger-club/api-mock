@@ -9,6 +9,8 @@ use App\Factory\Log\LoggerFactoryFactory;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimit;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use UnexpectedValueException;
 
@@ -27,10 +29,10 @@ use function sprintf;
 #[Route('/api/discogs')]
 final class ApiController extends AbstractApplicationController
 {
-    private const int RATE_LIMIT_TOTAL = 60;
-
-    public function __construct(private LoggerFactoryFactory $loggerFactoryFactory)
-    {
+    public function __construct(
+        private LoggerFactoryFactory $loggerFactoryFactory,
+        private RateLimiterFactory $discogsApiLimiter,
+    ) {
     }
 
     #[Route('/releases/{releaseId<\d+>}', name: 'api_discogs_release', methods: ['GET'])]
@@ -38,19 +40,47 @@ final class ApiController extends AbstractApplicationController
     {
         $logger = $this->createLogger('api_discogs_release');
         $logger->debug(sprintf('%s: %d', __FUNCTION__, $releaseId));
-        $logger->debug(sprintf('IP: %s', (string) $request->getClientIp()));
 
-        $headers = [
-            'Content-Type' => 'application/json',
-            'x-discogs-ratelimit' => self::RATE_LIMIT_TOTAL,
-        ];
+        $cip = $this->getClientIp($request);
+        $logger->debug(sprintf('ip: %s', $cip));
+
+        $limiter = $this->discogsApiLimiter->create($cip);
+        $rateLimit = $limiter->consume(1);
+
+        $headers = $this->createHeaders($rateLimit);
         $logger->debug(sprintf('Response headers: %s', json_encode($headers)));
 
+        $responseStatusCode = Response::HTTP_OK;
+
+        // Somehow this does not work, @todo check why.
+        //$isAccepted = $rateLimit->isAccepted();
+        $isAccepted = $rateLimit->getRemainingTokens() > 0;
+        if ($isAccepted === false) {
+            $responseStatusCode = Response::HTTP_TOO_MANY_REQUESTS;
+        }
+        $logger->debug(sprintf('Response status: %d', $responseStatusCode));
+
         return new Response(
-            $this->createResponseData(),
-            200,
+            $this->createResponseData($responseStatusCode),
+            $responseStatusCode,
             $headers,
         );
+    }
+
+    /**
+     * @return array<string,int|string>
+     */
+    private function createHeaders(RateLimit $rateLimit): array
+    {
+        $rateLimitTotal = $rateLimit->getLimit();
+        $rateLimitRemaining = $rateLimit->getRemainingTokens();
+
+        return [
+            'Content-Type' => 'application/json',
+            'x-discogs-ratelimit' => $rateLimitTotal,
+            'x-discogs-ratelimit-remaining' => $rateLimitRemaining,
+            'x-discogs-ratelimit-used' => $rateLimitTotal - $rateLimitRemaining,
+        ];
     }
 
     private function createLogger(string $channel): LoggerInterface
@@ -60,8 +90,12 @@ final class ApiController extends AbstractApplicationController
         return $loggerFactory->createLogger($channel);
     }
 
-    private function createResponseData(): string
+    private function createResponseData(int $responseStatusCode): ?string
     {
+        if ($responseStatusCode !== Response::HTTP_OK) {
+            return null;
+        }
+
         $projectPath = $this->createProjectPathFromParameter();
 
         $data = file_get_contents(sprintf('%s/resources/api/discogs/releases/1.json', $projectPath));
