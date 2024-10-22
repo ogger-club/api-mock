@@ -7,11 +7,13 @@ namespace App\Controller\Discogs;
 use App\Controller\AbstractApplicationController;
 use App\Factory\Log\LoggerFactoryFactory;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use UnexpectedValueException;
 
 use function file_get_contents;
+use function json_encode;
 use function sprintf;
 
 /**
@@ -32,19 +34,22 @@ final class ApiController extends AbstractApplicationController
     }
 
     #[Route('/releases/{releaseId<\d+>}', name: 'api_discogs_release', methods: ['GET'])]
-    public function getRelease(int $releaseId): Response
+    public function getRelease(int $releaseId, Request $request): Response
     {
         $logger = $this->createLogger('api_discogs_release');
-        $logger->debug(__FUNCTION__);
-        $logger->debug(sprintf('Release id: %d', $releaseId));
+        $logger->debug(sprintf('%s: %d', __FUNCTION__, $releaseId));
+        $logger->debug(sprintf('IP: %s', (string) $request->getClientIp()));
+
+        $headers = [
+            'Content-Type' => 'application/json',
+            'x-discogs-ratelimit' => self::RATE_LIMIT_TOTAL,
+        ];
+        $logger->debug(sprintf('Response headers: %s', json_encode($headers)));
 
         return new Response(
             $this->createResponseData(),
             200,
-            [
-                'Content-Type' => 'application/json',
-                'x-discogs-ratelimit' => self::RATE_LIMIT_TOTAL,
-            ],
+            $headers,
         );
     }
 
