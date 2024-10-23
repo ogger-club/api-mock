@@ -2,5 +2,5 @@ framework:
   rate_limiter:
     discogs_api:
       policy: 'sliding_window'
-      limit: 60
+      limit: '%env(int:RATE_LIMIT_TOTAL_DISCOGS_API)%'
       interval: '60 seconds'
