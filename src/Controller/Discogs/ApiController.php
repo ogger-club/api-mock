@@ -71,7 +71,7 @@ final class ApiController extends AbstractApplicationController
         $rateLimitRemaining = $rateLimit->getRemainingTokens();
 
         return [
-            'Content-Type' => 'application/json',
+            'content-type' => 'application/json',
             'x-discogs-ratelimit' => $rateLimitTotal,
             'x-discogs-ratelimit-remaining' => $rateLimitRemaining,
             'x-discogs-ratelimit-used' => $rateLimitTotal - $rateLimitRemaining,
