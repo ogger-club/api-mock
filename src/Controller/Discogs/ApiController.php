@@ -18,14 +18,6 @@ use function file_get_contents;
 use function json_encode;
 use function sprintf;
 
-/**
- * Psalm: Symfony related error:
- * "Property AppController::$container is not defined in constructor of AppController
- *  or in any methods called in the constructor (see https://psalm.dev/074)"
- *
- * @psalm-suppress PropertyNotSetInConstructor
- * @todo check https://github.com/psalm/psalm-plugin-symfony
- */
 #[Route('/api/discogs')]
 final class ApiController extends AbstractApplicationController
 {
