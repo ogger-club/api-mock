@@ -24,6 +24,7 @@
         "phpcompatibility/php-compatibility": "^9",
         "phpmd/phpmd": "^2",
         "phpstan/phpstan": "^1",
+        "phpstan/phpstan-deprecation-rules": "^2",
         "phpstan/phpstan-phpunit": "^1",
         "phpstan/phpstan-strict-rules": "^1",
         "phpstan/phpstan-symfony": "^1",
