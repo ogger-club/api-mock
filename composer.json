@@ -7,14 +7,14 @@
         "php": ">=8.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "symfony/console": "7.1.*",
-        "symfony/dotenv": "7.1.*",
+        "symfony/console": "7.2.*",
+        "symfony/dotenv": "7.2.*",
         "symfony/flex": "^2",
-        "symfony/framework-bundle": "7.1.*",
-        "symfony/lock": "7.1.*",
-        "symfony/rate-limiter": "7.1.*",
-        "symfony/runtime": "7.1.*",
-        "symfony/yaml": "7.1.*",
+        "symfony/framework-bundle": "7.2.*",
+        "symfony/lock": "7.2.*",
+        "symfony/rate-limiter": "7.2.*",
+        "symfony/runtime": "7.2.*",
+        "symfony/yaml": "7.2.*",
         "webservco/log": "^0"
     },
     "require-dev": {
@@ -95,7 +95,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "7.1.*"
+            "require": "7.2.*"
         }
     }
 }
