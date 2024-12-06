@@ -1,5 +1,5 @@
 name: api-mock
-type: php
+type: symfony
 docroot: public
 xdebug_enabled: false
 additional_hostnames: []
