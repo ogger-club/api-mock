@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Symfony CLI console shortcut command
+## Usage: sc
+## Example: ddev sc
+
+ddev exec symfony console $@
