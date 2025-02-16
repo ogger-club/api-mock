@@ -120,6 +120,11 @@ final class ApiController extends AbstractApplicationController
     ): bool {
         $logger = $this->createLogger('api_discogs_release');
 
+        $headersAsString = json_encode($headers);
+        if ($headersAsString === false) {
+            throw new UnexpectedValueException('Error converting array to json.');
+        }
+
         $logger->debug(
             sprintf(
                 '%s %s %d %d %s',
@@ -127,7 +132,7 @@ final class ApiController extends AbstractApplicationController
                 $route,
                 $releaseId,
                 $responseStatusCode,
-                json_encode($headers),
+                $headersAsString,
             ),
         );
 
