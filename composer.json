@@ -15,7 +15,7 @@
         "symfony/rate-limiter": "7.2.*",
         "symfony/runtime": "7.2.*",
         "symfony/yaml": "7.2.*",
-        "webservco/log": "^1"
+        "webservco/log": "^2"
     },
     "require-dev": {
         "phan/phan": "^6",
