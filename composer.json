@@ -7,14 +7,14 @@
         "php": "^8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "symfony/console": "7.2.*",
-        "symfony/dotenv": "7.2.*",
+        "symfony/console": "7.4.*",
+        "symfony/dotenv": "7.4.*",
         "symfony/flex": "^2",
-        "symfony/framework-bundle": "7.2.*",
-        "symfony/lock": "7.2.*",
-        "symfony/rate-limiter": "7.2.*",
-        "symfony/runtime": "7.2.*",
-        "symfony/yaml": "7.2.*",
+        "symfony/framework-bundle": "7.4.*",
+        "symfony/lock": "7.4.*",
+        "symfony/rate-limiter": "7.4.*",
+        "symfony/runtime": "7.4.*",
+        "symfony/yaml": "7.4.*",
         "webservco/log": "^2"
     },
     "require-dev": {
@@ -74,10 +74,10 @@
             "@auto-scripts"
         ],
         "check:lint": "vendor/bin/parallel-lint bin config public src tests",
-        "check:phan": "vendor/bin/phan --config-file vendor/webservco/coding-standards/phan/config.php",
-        "check:phpcs": "vendor/bin/phpcs --standard=.phpcs/php-coding-standard.xml --extensions=php -sp bin config public src tests --ignore=./config/bundles.php,./tests/bootstrap.php",
-        "check:phpmd": "vendor/bin/phpmd bin,config,public,src,tests json vendor/webservco/coding-standards/phpmd/phpmd-rule-set.xml",
-        "check:phpstan": "vendor/bin/phpstan analyse bin config public src tests --ansi -c vendor/webservco/coding-standards/phpstan/phpstan-symfony.neon",
+        "check:phan": "vendor/bin/phan --config-file vendor/webservco/coding-standards/phan/config.php --exclude-file config/bundles.php --exclude-file config/reference.php",
+        "check:phpcs": "vendor/bin/phpcs --standard=.phpcs/php-coding-standard.xml --extensions=php -sp bin config public src tests --ignore=./config/bundles.php,./config/reference.php,./tests/bootstrap.php",
+        "check:phpmd": "vendor/bin/phpmd bin,config,public,src,tests json vendor/webservco/coding-standards/phpmd/phpmd-rule-set.xml --exclude config/reference.php",
+        "check:phpstan": "vendor/bin/phpstan analyse bin config public src tests --ansi -c phpstan.neon",
         "check:psalm": "vendor/bin/psalm --config=vendor/webservco/coding-standards/psalm/psalm-symfony.xml --no-diff",
         "check": [
             "@check:lint",
@@ -88,7 +88,7 @@
             "@check:phan"
         ],
         "c": "@check",
-        "fix:phpcs": "vendor/bin/phpcbf --standard=.phpcs/php-coding-standard.xml --extensions=php -sp bin config public src tests --ignore=./config/bundles.php,./tests/bootstrap.php"
+        "fix:phpcs": "vendor/bin/phpcbf --standard=.phpcs/php-coding-standard.xml --extensions=php -sp bin config public src tests --ignore=./config/bundles.php,./config/reference.php,./tests/bootstrap.php"
     },
     "conflict": {
         "symfony/symfony": "*"
@@ -96,7 +96,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "7.2.*"
+            "require": "7.4.*"
         }
     }
 }
