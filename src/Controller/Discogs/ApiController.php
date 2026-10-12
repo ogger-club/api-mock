@@ -98,10 +98,7 @@ final class ApiController extends AbstractApplicationController
     {
         $responseStatusCode = Response::HTTP_OK;
 
-        // Somehow this does not work, @todo check why.
-        //$isAccepted = $rateLimit->isAccepted();
-        $isAccepted = $rateLimit->getRemainingTokens() > 0;
-        if ($isAccepted === false) {
+        if (!$rateLimit->isAccepted()) {
             $responseStatusCode = Response::HTTP_TOO_MANY_REQUESTS;
         }
 

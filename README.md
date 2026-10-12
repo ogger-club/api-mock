@@ -84,8 +84,6 @@ RATE_LIMIT_TOTAL_DISCOGS_API=60
 
 The limiter uses a sliding window of 60 seconds per client IP. Its state lives in the default Symfony cache (files in `var/cache`), with `flock` locks.
 
-The controller refuses a request when no tokens are left after counting it, so with a limit of 60 the 60th request in a window already gets a `429`. It checks the remaining tokens because `RateLimit::isAccepted()` didn't behave as expected.
-
 ---
 
 ## Development
