@@ -1,120 +1,100 @@
 # ogger-club/api-mock
 
-A rudimentary API mock project. 
+A Symfony web application.
 
-> An API mock is a web service that simulates a real, functional service
- 
-Initial use case: Simulate Discogs API rate limiting.
+Mock of the Discogs API that applies the same rate limiting headers and logs every request, for testing how a client handles rate limits.
 
-## Setup
+- Requires: PHP 8.4+, [ddev](https://ddev.com/) (or Composer and the Symfony CLI)
+- Uses: `webservco/log` for the request log, Symfony RateLimiter and Lock
 
-- Requires: [DDEV](https://ddev.com/)
+---
+
+## Installation
 
 ```shell
 # Start project.
 ddev start
-# Install dependencies
-ddev composer update
+# Install dependencies.
+ddev c u
 ```
 
-### Standalone
+The base URL is `https://api-mock.ddev.site`.
 
-If using DDEV is not an option, the project can also be used standalone.
-
-Requirements:
-
-- PHP >= 8.3
-- Composer
-- Symfony CLI
+### Without ddev
 
 ```shell
-# Install dependencies
 composer update
-# One time setup
+# One time setup.
 symfony server:ca:install
-# Start project.
+# The base URL is in the output.
 symfony serve
-# Check CLI output for the base URL.
-``` 
+```
 
 ---
 
 ## Usage
 
-Base URL: `https://api-mock.ddev.site`
-
-If not using DDEV, check CLI output to get the exact URL.
-
-Perform requests to the mock API and check the logs in the directory '/var/logs/{DATE}'.
-
-Each request is logged in the following format:
-
-`[timestamp] environment client_ip route parameters response_code response_headers`
-
-Example for Discogs API release endpoint:
-
-```text
-[20241022.215709.254326] debug 127.0.0.1 api_discogs_release 1 200 {"Content-Type":"application\/json","x-discogs-ratelimit":60,"x-discogs-ratelimit-remaining":59,"x-discogs-ratelimit-used":1}
-[20241022.215725.788502] debug 127.0.0.1 api_discogs_release 2 200 {"Content-Type":"application\/json","x-discogs-ratelimit":60,"x-discogs-ratelimit-remaining":58,"x-discogs-ratelimit-used":2}
-[20241022.215728.989264] debug 127.0.0.1 api_discogs_release 3 200 {"Content-Type":"application\/json","x-discogs-ratelimit":60,"x-discogs-ratelimit-remaining":57,"x-discogs-ratelimit-used":3}
-```
-
-
-### Discogs API
-
-#### Endpoints
-
-##### `/api/discogs/releases/{releaseId}`
-
-- input: any number
-- response: always returns the data for release id 1;
-
-###### Example
+Point the client's Discogs API base URL at the mock and send requests as usual. Authorization and user agent headers are accepted but not checked.
 
 ```text
 > GET /api/discogs/releases/1 HTTP/2
-Host: api-mock.ddev.site
-Accept-Encoding: deflate, gzip, br
-Accept: application/vnd.discogs.v2.discogs+json
-Authorization: Discogs token=CAN_BE_ANYTHING
-User-Agent: CAN_BE_ANYTHING
-Content-Length: 0
+> Host: api-mock.ddev.site
+> Accept: application/vnd.discogs.v2.discogs+json
+> Authorization: Discogs token=ANYTHING
 
-< HTTP/2 200 
-< cache-control: no-cache, private
+< HTTP/2 200
 < content-type: application/json
-< date: Fri, 25 Oct 2024 18:07:03 GMT
-< server: Apache/2.4.62 (Debian)
-< vary: Authorization
 < x-discogs-ratelimit: 60
 < x-discogs-ratelimit-remaining: 59
 < x-discogs-ratelimit-used: 1
-< x-robots-tag: noindex
-< 
 ```
 
-#### Customize rate limit
+### Endpoints
 
-Default rate limit: 60 requests per minute. 
+| Endpoint | Method | Response |
+| --- | --- | --- |
+| `/api/discogs/releases/{releaseId}` | `GET` | The data of release 1 for any numeric ID, from [resources/api/discogs/releases/1.json](resources/api/discogs/releases/1.json). |
 
-In order to customize it, create `.env.local` with contents:
+When the limit is reached, the response is `429 Too Many Requests` with an empty body.
+
+### Request log
+
+Each request writes a line to `var/log/{YYYYMMDD}/api_discogs_release.log`:
 
 ```text
+[20241022.215709.254326] debug 127.0.0.1 api_discogs_release 1 200 {"content-type":"application\/json","x-discogs-ratelimit":60,"x-discogs-ratelimit-remaining":59,"x-discogs-ratelimit-used":1}
+```
+
+The fields are the log ID, log level, client IP, route, release ID, response status and response headers.
+
+---
+
+## Configuration
+
+Keys read from `.env`. Override them in `.env.local`.
+
+```ini
+# Requests allowed per minute, per client IP.
 RATE_LIMIT_TOTAL_DISCOGS_API=60
 ```
 
-Where `60` is the total number to requests allowed per minute.
+---
+
+## Notes
+
+The limiter uses a sliding window of 60 seconds per client IP. Its state lives in the default Symfony cache (files in `var/cache`), with `flock` locks.
+
+The controller refuses a request when no tokens are left after counting it, so with a limit of 60 the 60th request in a window already gets a `429`. It checks the remaining tokens because `RateLimit::isAccepted()` didn't behave as expected.
+
+Phan still reports some errors that haven't been fixed yet.
 
 ---
 
 ## Development
 
 ```shell
-# run code validation
-ddev composer check
+# Run all validations.
+ddev c c
+# Fix code style.
+ddev c fix:phpcs
 ```
-
-## TODO
-
-- [ ] Solve `phan` errors;
-
