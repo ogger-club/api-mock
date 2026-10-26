@@ -94,3 +94,9 @@ ddev c c
 # Fix code style.
 ddev c fix:phpcs
 ```
+
+---
+
+## License
+
+[MIT](LICENSE)
